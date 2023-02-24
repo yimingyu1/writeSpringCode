@@ -14,8 +14,10 @@ public class App
     public static void main( String[] args )
     {
         DemoApplicationContext demoApplicationContext = new DemoApplicationContext(MyConfig.class);
-        Object myController = demoApplicationContext.getBean("myController1");
+        Object myController = demoApplicationContext.getBean("myConfig");
         System.out.println(myController);
+        Object myController1 = demoApplicationContext.getBean("myConfig");
+        System.out.println(myController1);
         System.out.println(demoApplicationContext.getAllBeans());
     }
 }

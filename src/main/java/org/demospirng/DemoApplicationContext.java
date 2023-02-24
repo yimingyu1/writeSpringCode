@@ -4,6 +4,7 @@ import org.apache.commons.lang3.StringUtils;
 
 import java.io.File;
 import java.lang.annotation.Annotation;
+import java.lang.reflect.Field;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
@@ -75,7 +76,8 @@ public class DemoApplicationContext {
     public void instanceSingletonBean() {
         for (Map.Entry<String, BeanDefinition> entry : beanDefinitionMap.entrySet()) {
             BeanDefinition beanDefinition = entry.getValue();
-            if (!beanDefinition.isLazy() && beanDefinition.getScope().equals(ScopeEnum.SINGLETON.getType())) {
+            if (!beanDefinition.isLazy() && beanDefinition.getScope().equals(ScopeEnum.SINGLETON.getType())
+                    && singleBeanObjMap.get(entry.getKey()) == null) {
                 singleBeanObjMap.put(entry.getKey(), createBean(beanDefinition));
             }
         }
@@ -86,6 +88,28 @@ public class DemoApplicationContext {
         Object obj = null;
         try {
             obj = beanClass.getDeclaredConstructor().newInstance();
+            Field[] declaredFields = beanClass.getDeclaredFields();
+            for (Field field : declaredFields) {
+                if (field.isAnnotationPresent(Autowired.class)) {
+                    String beanName = StringUtils.uncapitalize(field.getType().getSimpleName());
+                    BeanDefinition beanDefinition1 = beanDefinitionMap.get(beanName);
+                    if (beanDefinition1 == null) {
+                        throw new RuntimeException("bean not exist");
+                    }
+                    field.setAccessible(true);
+                    if (beanDefinition1.getScope().equals(ScopeEnum.SINGLETON.getType())) {
+                        Object o = singleBeanObjMap.get(beanName);
+                        if (o == null) {
+                            o  = createBean(beanDefinition1);
+                            singleBeanObjMap.put(beanName, o);
+                        }
+                        field.set(obj, o);
+                    } else {
+                        Object o1  = createBean(beanDefinition1);
+                        field.set(obj, o1);
+                    }
+                }
+            }
         }catch (Exception e) {
             e.printStackTrace();
         }

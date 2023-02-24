@@ -3,6 +3,7 @@ package org.example.controller;
 import org.demospirng.Autowired;
 import org.demospirng.Component;
 import org.demospirng.Configuration;
+import org.demospirng.Scope;
 import org.example.domain.User;
 
 /**
@@ -10,6 +11,7 @@ import org.example.domain.User;
  */
 @Component
 @Configuration
+@Scope("prototype")
 public class MyController {
 
     @Autowired
